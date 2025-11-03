@@ -1,4 +1,4 @@
 package com.epn.proyecto;
 
-public class InsertionSort {
+public class InsertSort {
 }
