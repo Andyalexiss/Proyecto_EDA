@@ -10,7 +10,7 @@ public class Main {
 
     // Información clave para el registro de resultados
     private static final String RUTA_DATASET = "resources/dataset_1M.csv"; //aUQI VA EL DATASET MUCHACHPS
-    private static final String NOMBRE_EQUIPO = "Equipo_X_i7_16GB"; // DANIEL debe cambiar esto por el equipo actual YHA QUE NO ME ACUEROD xd
+    private static final String NOMBRE_EQUIPO = "Equipo_Ryzen 8_8800hs_16GB"; // DANIEL debe cambiar esto por el equipo actual YHA QUE NO ME ACUEROD xd
 
     public static void main(String[] args) {
 
@@ -19,54 +19,55 @@ public class Main {
         System.out.println("--- PRUEBAS DE TIEMPO UNIPROCESO INICIADAS ---");
 
         // 1. CARGA DE DATOS (Responsabilidad de DANIEL - DataReader.java)
-        List<Double> datosParaPrueba;
+        // modifico la lista de double a NormalizedUtility para que el codigo de Ana funcione
+        List<NormalizedUtility> datosParaPrueba; 
         try {
-            // Daniel debe implementar DataReader.leerDatos
             datosParaPrueba = DataReader.leerYLimpiarDataset(RUTA_DATASET);
             System.out.println("Dataset cargado y listo. Tamaño: " + datosParaPrueba.size());
-
         } catch (Exception e) {
             System.err.println("Error fatal al cargar los datos: " + e.getMessage());
+            e.printStackTrace();
             return;
         }
 
         // --- PRUEBA 1: ALGORITMO O(n log n) de Ana ---
 
         // Necesitamos una copia fresca de los datos para cada prueba
-        List<Double> datos_nlogn = new ArrayList<>(datosParaPrueba);
+        List<NormalizedUtility> datos_mergesort = new ArrayList<>(datosParaPrueba); // <-- ¡IDIOMA CORRECTO!
 
         Timer timer1 = new Timer();
-        System.out.println("\n[PRUEBA 1] Ejecutando O(n log n)...");
+        System.out.println("\n[PRUEBA 1] Ejecutando O(n log n) de Ana (Mergesort)..."); 
 
         timer1.start();
-        // Ana debe implementar OnLogN_Sort.sort()
-        OnLogN_Sort.sort(datos_nlogn);
+      
+        OnLogN_Sort.sort(datos_mergesort); //  Llama al Mergesort de Ana
         timer1.stop();
 
         double tiempo1 = timer1.getDurationSeconds();
-        System.out.printf("Tiempo O(n log n): %.4f segundos\n", tiempo1);
+        System.out.printf("Tiempo O(n log n) [Mergesort]: %.4f segundos\n", tiempo1);
+        ResultsWriter.writeResult("OnLogN_Sort (Mergesort)", "O(n log n)", tiempo1, NOMBRE_EQUIPO);
+        
+        
 
-        // 2. Registrar el resultado
-        ResultsWriter.writeResult("OnLogN_Sort (Merge/Quick)", "O(n log n)", tiempo1, NOMBRE_EQUIPO);
+        // --- PRUEBA 2: ALGORITMO O(nlog n ) Quicksort de Daniel ---
 
-
-        // --- PRUEBA 2: ALGORITMO O(n^2) de Daniel ---
-
-        List<Double> datos_n2 = new ArrayList<>(datosParaPrueba); // Otra copia fresca
+        List<NormalizedUtility> datos_quicksort = new ArrayList<>(datosParaPrueba); // <-- ¡IDIOMA CORRECTO!
 
         Timer timer2 = new Timer();
-        System.out.println("\n[PRUEBA 2] Ejecutando O(n^2)...");
+        System.out.println("\n[PRUEBA 2] Ejecutando tu Quicksort O(n log n)..."); 
 
         timer2.start();
-        // Daniel debe implementar On2_Sort.sort()
-        On2_Sort.sort(datos_n2);
+        
+        
+        On_logn_Quicksort.sort(datos_quicksort); 
+        
         timer2.stop();
 
         double tiempo2 = timer2.getDurationSeconds();
-        System.out.printf("Tiempo O(n^2): %.4f segundos\n", tiempo2);
-
-        // 3. Registrar el resultado
-        ResultsWriter.writeResult("On2_Sort (Insertion/Bubble)", "O(n^2)", tiempo2, NOMBRE_EQUIPO);
+        System.out.printf("Tiempo O(n log n) [Quicksort]: %.4f segundos\n", tiempo2);
+        
+        // Registra tu resultado
+        ResultsWriter.writeResult("On_logn_Quicksort (Daniel)", "O(n log n)", tiempo2, NOMBRE_EQUIPO);
 
         System.out.println("\n--- PRUEBAS DE TIEMPO UNIPROCESO FINALIZADAS ---");
     }
