@@ -1,6 +1,5 @@
-package ProyectoB1;
 import java.lang.Math;
-import java.util.List;
+
 public class NormalizedUtility {
     // Ana
     //Atributos de la Clase
@@ -54,5 +53,6 @@ public class NormalizedUtility {
         return Math.min(base / 3.0, 1.0);
     }
 }
+
 
 
