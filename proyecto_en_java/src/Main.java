@@ -1,6 +1,6 @@
+package proyectoEda;
 import java.util.List;
 import java.util.ArrayList;
-
 /**
  * Script Maestro para la ejecución y medición de tiempo de los algoritmos de ordenamiento
  * en MODO UNIPROCESO (Java).
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 public class Main {
 
     // Información clave para el registro de resultados
-    private static final String RUTA_DATASET = "resources/dataset_1M.csv"; //aUQI VA EL DATASET MUCHACHPS
+    private static final String RUTA_DATASET = "src/datosEda.csv"; //aUQI VA EL DATASET MUCHACHPS
     private static final String NOMBRE_EQUIPO = "Equipo_Ryzen 8_8800hs_16GB"; // DANIEL debe cambiar esto por el equipo actual YHA QUE NO ME ACUEROD xd
 
     public static void main(String[] args) {

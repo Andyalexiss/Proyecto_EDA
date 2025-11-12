@@ -1,3 +1,4 @@
+package proyectoEda;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -9,7 +10,7 @@ import java.util.List;
  */
 public class ResultsWriter {
 
-    private static final String FILE_PATH = "output/tiempos_uniproceso.csv";
+    private static final String FILE_PATH = "src/Resultados/tiempos_uniproceso.csv";
 
     public static void writeHeader() {
         try (PrintWriter pw = new PrintWriter(new FileWriter(FILE_PATH))) {
