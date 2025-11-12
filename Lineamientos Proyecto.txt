@@ -1,0 +1,37 @@
+Ordenar un millón de datos, importo una base de datos , no debe ser un listado de una sola fila 
+
+archivo netamente con mínimo 3 columnas de datos , puede ser 
+CODIGO   PRODUCTO PRECIO EJEMPLO
+2.- Debe aplicar alguna formula o cálculo para gestionar los datos / simula un proceso transaccional 
+3.- Sugerencia : al menos dos tipos de ordenamientos para organizar los datos
+4.- cada ordenamiento debe calcular el tiempo que se demora en calcular y ordenar los datos 
+5.- conclusión cual es el mejor ordenamiento basado en el tiempo de procesamiento 
+
+Segunda parte 
+
+3.1 .- Utilizar los mismos algoritmos realizando multiprocesamiento 
+aplicar 4 y 5.
+
+6. esto en 3 equipos para ver cuanto se demora con distintos procesadores
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Informe  
+/ caso de estudio
+ fórmula explicación de cual es el objetivo del procesamiento , base de datos  y un ejemplo
+
+/Explicar los 2 tipos de ordenamiento 
+
+/Características del hardware de la pc de los 3 equipos del grupo
+
+
+/Código , ( Librerías , funciones ) elemento de programación adicionales que se utilizaron
+
+
+/ Tabla Comparativa 3 procesamientos 
+
+/ Tabla comparativa 3 Multiprocesamiento 
+
+/ Conclusiones 
+
+FECHA DE ENTREGA: 07 DE NOVIEMBRE AVANCE -- 12 Trabajo Final.
+Procesamiento Normal en Java y el Multiprocesamiento a python
+
