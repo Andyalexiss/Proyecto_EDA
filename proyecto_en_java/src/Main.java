@@ -2,6 +2,7 @@ package proyectoEda;
 import java.util.List;
 import java.util.ArrayList;
 /**
+ * 
  * Script Maestro para la ejecución y medición de tiempo de los algoritmos de ordenamiento
  * en MODO UNIPROCESO (Java).
  * Responsabilidad de Orquestación: Daniel (Liderar la fase de pruebas)
@@ -10,7 +11,7 @@ public class Main {
 
     // Información clave para el registro de resultados
     private static final String RUTA_DATASET = "src/datosEda.csv"; //aUQI VA EL DATASET MUCHACHPS
-    private static final String NOMBRE_EQUIPO = "Equipo_Ryzen 8_8800hs_16GB"; // DANIEL debe cambiar esto por el equipo actual YHA QUE NO ME ACUEROD xd
+    private static final String NOMBRE_EQUIPO = "Equipo_Ryzen 7_8845hs_16GB"; // DANIEL debe cambiar esto por el equipo actual YHA QUE NO ME ACUEROD xd
 
     public static void main(String[] args) {
 
@@ -54,20 +55,20 @@ public class Main {
         List<NormalizedUtility> datos_quicksort = new ArrayList<>(datosParaPrueba); // <-- ¡IDIOMA CORRECTO!
 
         Timer timer2 = new Timer();
-        System.out.println("\n[PRUEBA 2] Ejecutando tu Quicksort O(n log n)..."); 
+        System.out.println("\n[PRUEBA 2] Ejecutando InsertionSort O(n2)..."); 
 
         timer2.start();
         
         
-        On_logn_Quicksort.sort(datos_quicksort); 
+        On2Insertion_sort.sort(datos_quicksort); 
         
         timer2.stop();
 
         double tiempo2 = timer2.getDurationSeconds();
-        System.out.printf("Tiempo O(n log n) [Quicksort]: %.4f segundos\n", tiempo2);
+        System.out.printf("Tiempo O(n2) [InsertionSort]: %.4f segundos\n", tiempo2);
         
         // Registra tu resultado
-        ResultsWriter.writeResult("On_logn_Quicksort (Daniel)", "O(n log n)", tiempo2, NOMBRE_EQUIPO);
+        ResultsWriter.writeResult("On2_InsertionSort ", "O(n2)", tiempo2, NOMBRE_EQUIPO);
 
         System.out.println("\n--- PRUEBAS DE TIEMPO UNIPROCESO FINALIZADAS ---");
     }
