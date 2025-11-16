@@ -1,4 +1,4 @@
-
+package proyectoEda;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -10,12 +10,11 @@ import java.util.List;
  * Script Lectura y Limpieza
  * =======================================================================
  * Script cual carga los datos, crea objetos NormalizedUtility, y luego *extrae*
- * el valor de utilidadNormalizada para cumplir con el main que Andy propuso List<Double>
  * 
  */
 public class DataReader {
 
-    // (Usando los índices que validamos: 2, 3, 6, 8, 9)
+    // indices de las columnas a utilizar  2, 3, 6, 8, 9)
     private static final int COL_APP_NAME = 2;
     private static final int COL_REVIEW_ID = 3; 
     private static final int COL_TIMESTAMP = 6;
@@ -39,10 +38,12 @@ public class DataReader {
             String line;
             
             while ((line = br.readLine()) != null) {
+            	//se identifica las columnas 
                 String[] columnas = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
                 
                 if (columnas.length > MAX_INDEX) { 
                     try {
+                    	//se extraen las columnas 
                         String appName = columnas[COL_APP_NAME].trim();
                         long reviewId = Long.parseLong(columnas[COL_REVIEW_ID].trim());
                         long timestamp = Long.parseLong(columnas[COL_TIMESTAMP].trim());
@@ -59,7 +60,7 @@ public class DataReader {
             }
         }
         System.out.println("[DataReader] Lectura completada. Se cargaron " + reviews.size() + " filas limpias.");
-        //corrigo para que el código de Ana se vincule con el Main / no cambio a list double 
+       
         return reviews;
     }
-}
+}}

@@ -1,3 +1,4 @@
+package proyectoEda;
 import java.lang.Math;
 
 public class NormalizedUtility {

@@ -1,3 +1,4 @@
+package proyectoEda;
 /**
  * Clase para la medición precisa de tiempo en nanosegundos (Uniproceso).
  * Implementado por Andy.
