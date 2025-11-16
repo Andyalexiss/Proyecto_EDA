@@ -1,118 +1,122 @@
-
-"""
-Script Maestro para la ejecución y medición de tiempo de los algoritmos 
-O(n log n) en MODO MULTIPROCESO (Python).
-"""
-
-import copy
 import time
-from typing import List
-import os
-
-# Importaciones de componentes del proyecto
-from utils import cargar_datos, NormalizedUtility 
-from onlogn_quicksort import sort as daniel_quicksort_sort 
-from onlogn_sort import sort as ana_mergesort_sort      
-from results_writer import ResultsWriter                 
-from multiprocessing_module.multiprocess_manager import execute_parallel, Timer 
+import multiprocessing as mp
+import sys
+from typing import List, Callable, Any
+from copy import deepcopy 
 
 
+# Modulos del proyecto (Archivos dentro de subcarpetas)
+from results.read_and_clean import read_and_clean
+from algorithms.NormalizedUtility import NormalizedUtility
+from algorithms.sort_nlogn import sort as mergesort_worker     
+from algorithms.insertion_on2 import sort as insertionsort_worker 
+from multiprocessing_module.timer import Timer
+from results.ResultsWriter import write_header, write_result
 
-RUTA_DATASET = "datosEda.csv"
-NOMBRE_EQUIPO = "Equipo_Ryzen_Daniel" 
-RESULTADOS_CSV = "resultados_multiproceso.csv"
-NUM_PROCESOS = os.cpu_count() // 2 if os.cpu_count() else 4 
+# --- Configuracion del Experimento ---
+RUTA_DATASET = "datosEda.csv" 
+NOMBRE_EQUIPO = "Equipo_ryzen 7 8845hs_Multiproceso_Final"
 
+# =======================================================================
+# --- LOGICA DE FUSION (REDUCE) ---
+# Funcion que une dos listas ya ordenadas, manteniendo el orden.
+# =======================================================================
+def merge_listas_ordenadas(izquierda: List[NormalizedUtility], derecha: List[NormalizedUtility]) -> List[NormalizedUtility]:
+    """Fusiona dos listas ordenadas por utilidadNormalizada en una sola."""
+    resultado = []
+    i = j = 0
+    while i < len(izquierda) and j < len(derecha):
+        if izquierda[i].utilidad_normalizada <= derecha[j].utilidad_normalizada:
+            resultado.append(izquierda[i])
+            i += 1
+        else:
+            resultado.append(derecha[j])
+            j += 1
+    resultado.extend(izquierda[i:])
+    resultado.extend(derecha[j:])
+    return resultado
 
-def ejecutar_pruebas_multiproceso():
-  
+# =======================================================================
+# --- SCRIPT MAESTRO (MAIN) ---
+# =======================================================================
+def main():
+    """
+    Funcion principal que orquesta la comparacion de O(n²) contra O(n log n)
+    en un entorno de multiples nucleos (Multiproceso).
+    """
     
-    # 0. Inicializar el archivo de resultados
-    ResultsWriter.write_header(RESULTADOS_CSV)
+    write_header()
     print("--- PRUEBAS DE TIEMPO MULTIPROCESO INICIADAS ---")
-    print(f"Número de Procesos (Workers) configurados: {NUM_PROCESOS}")
 
-    # 1. CARGA DE DATOS
-    datos_para_prueba: List[NormalizedUtility]
+    # 1. CARGA DE DATOS (DataReader)
     try:
-        datos_para_prueba = cargar_datos(RUTA_DATASET)
-        print("Dataset cargado y listo. Tamaño:", len(datos_para_prueba))
+        datosParaPrueba = read_and_clean.leer_y_limpiar_dataset(RUTA_DATASET)
     except Exception as e:
-        print(f"Error fatal al cargar los datos: {e}")
+        print(f"Error fatal al cargar los datos: {e}", file=sys.stderr)
         return
 
-    # -------------------------------------------------------------------
-    # --- PRUEBA 1: ALGORITMO O(n log n) de Ana (MergeSort MULTIPROCESO) ---
-    # -------------------------------------------------------------------
+    num_nucleos = mp.cpu_count()
+    print(f"Configurando Pool de {num_nucleos} nucleos...")
     
-    datos_mergesort = copy.copy(datos_para_prueba) 
+    # 2. PREPARACION DE CHUNKS (Division del dataset)
+    chunk_size = len(datosParaPrueba) // num_nucleos
+    chunks_base = [datosParaPrueba[i:i + chunk_size] for i in range(0, len(datosParaPrueba), chunk_size)]
+    
+    timer_total = Timer()
 
-    print("\n[PRUEBA 1] Ejecutando MergeSort de Ana en MODO MULTIPROCESO...")
+    # -----------------------------------------------------------------------
+    # --- PRUEBA 1: ALGORITMO O(n log n) (Mergesort - El Rapido) ---
+    # -----------------------------------------------------------------------
+    print(f"\n[PRUEBA 1] Ordenando con Mergesort Paralelo (O(n log n))...")
+    timer_total.start()
     
-    # El Manager ejecuta el MergeSort de Ana sobre los chunks
-    tiempo_multiproceso_max_ana, datos_ana_parcialmente_ordenados = execute_parallel(
-        func=ana_mergesort_sort, 
-        data=datos_mergesort, 
-        num_processes=NUM_PROCESOS
-    )
+    with mp.Pool(processes=num_nucleos) as pool:
+        # FASE MAP: Cada nucleo ordena su pedazo con el Mergesort
+        chunks_ordenados_ana = pool.map(mergesort_worker, chunks_base)
     
-    print(f"[MAIN] Tiempo Multiproceso (MergeSort Workers): {tiempo_multiproceso_max_ana:.4f} segundos")
+    # FASE REDUCE: Fusionar y aplicar filtro de robustez
+    valid_chunks_ana = [c for c in chunks_ordenados_ana if isinstance(c, list)]
+    
+    if valid_chunks_ana:
+        lista_final_nlogn = valid_chunks_ana[0]
+        for i in range(1, len(valid_chunks_ana)):
+            lista_final_nlogn = merge_listas_ordenadas(lista_final_nlogn, valid_chunks_ana[i])
+            
+    timer_total.stop()
+    tiempo_nlogn = timer_total.get_duration()
+    print(f"-> Tiempo O(n log n) TOTAL: {tiempo_nlogn:.4f} segundos")
+    write_result("ParallelMergeSort", "O(n log n)", tiempo_nlogn, NOMBRE_EQUIPO)
 
-    # Fusión Final (MergeSort Serial Global)
-    timer_final_ana = Timer()
-    print("[MAIN] Realizando MergeSort final (Merge Serial) para consolidar...")
+    # -----------------------------------------------------------------------
+    # --- PRUEBA 2:  ALGORITMO LENTO (O(n²) - Insertion Sort) ---
+    # -----------------------------------------------------------------------
     
-    timer_final_ana.start()
-    ana_mergesort_sort(datos_ana_parcialmente_ordenados)
-    timer_final_ana.stop()
+    # Preparamos los chunks de nuevo
+    datos_insertion = datosParaPrueba.copy()
+    chunks_insertion = [datos_insertion[i:i + chunk_size] for i in range(0, len(datos_insertion), chunk_size)]
+    
+    print(f"\n[PRUEBA 2] Ordenando con Insertion Sort (O(n²))...")
+    timer_total.start()
+    
+    with mp.Pool(processes=num_nucleos) as pool:
+        # FASE MAP: Cada nucleo ordena su pedazo del Insertion Sort
+        chunks_ordenados_tuyos = pool.map(insertionsort_worker, chunks_insertion)
+    
 
-    tiempo_merge_final_ana = timer_final_ana.get_duration_seconds()
-    tiempo_registro_ana = tiempo_multiproceso_max_ana + tiempo_merge_final_ana
+    valid_chunks_tuyos = [c for c in chunks_ordenados_tuyos if isinstance(c, list)]
     
-    print(f"Tiempo Total (MergeSort Multiproceso): {tiempo_registro_ana:.4f} segundos")
-    
-    # Registrar el resultado
-    ResultsWriter.write_result(
-        "OnLogN_Sort (MergeSort Multiproceso)", "O(n log n)", tiempo_registro_ana, NOMBRE_EQUIPO, RESULTADOS_CSV
-    )
-    
-    # -------------------------------------------------------------------
-    # --- PRUEBA 2: ALGORITMO O(n log n) Quicksort de Daniel (MULTIPROCESO) ---
-    # -------------------------------------------------------------------
-    
-    datos_quicksort = copy.copy(datos_para_prueba) 
+    if valid_chunks_tuyos:
+        lista_final_n2 = valid_chunks_tuyos[0]
+        for i in range(1, len(valid_chunks_tuyos)):
+            lista_final_n2 = merge_listas_ordenadas(lista_final_n2, valid_chunks_tuyos[i])
+            
+    timer_total.stop()
+    tiempo_n2 = timer_total.get_duration()
+    print(f"-> Tiempo O(n²) TOTAL: {tiempo_n2:.4f} segundos")
+    write_result(f"InsertionSort", "O(n^2)", tiempo_n2, NOMBRE_EQUIPO)
 
-    print("\n[PRUEBA 2] Ejecutando QuickSort de Daniel en MODO MULTIPROCESO...")
-    
-    # El Manager ejecuta tu QuickSort sobre los chunks
-    tiempo_multiproceso_max_daniel, datos_daniel_parcialmente_ordenados = execute_parallel(
-        func=daniel_quicksort_sort, 
-        data=datos_quicksort, 
-        num_processes=NUM_PROCESOS
-    )
-    
-    print(f"[MAIN] Tiempo Multiproceso (QuickSort Workers): {tiempo_multiproceso_max_daniel:.4f} segundos")
-
-    
-    timer_final_daniel = Timer()
-    print("[MAIN] Realizando QuickSort final (Merge Serial) para consolidar...")
-    
-    timer_final_daniel.start()
-    daniel_quicksort_sort(datos_daniel_parcialmente_ordenados)
-    timer_final_daniel.stop()
-
-    tiempo_merge_final_daniel = timer_final_daniel.get_duration_seconds()
-    tiempo_registro_daniel = tiempo_multiproceso_max_daniel + tiempo_merge_final_daniel
-    
-    print(f"Tiempo Total (QuickSort Multiproceso): {tiempo_registro_daniel:.4f} segundos")
-    
-    # Registrar el resultado
-    ResultsWriter.write_result(
-        "On_logn_Quicksort (Multiproceso)", "O(n log n)", tiempo_registro_daniel, NOMBRE_EQUIPO, RESULTADOS_CSV
-    )
-    
-    print("\n--- PRUEBAS DE TIEMPO MULTIPROCESO FINALIZADAS ---")
+    print("\n--- COMPARACION FINALIZADA ---")
 
 
 if __name__ == "__main__":
-    ejecutar_pruebas_multiproceso()
+    main()

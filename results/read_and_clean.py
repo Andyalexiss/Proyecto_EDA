@@ -1,13 +1,15 @@
 import csv
-from NormalizedUtility import NormalizedUtility
-from typing import List
+from typing import List, Any
+# Asume que NormalizedUtility está en la carpeta 'algorithms'
+from algorithms.NormalizedUtility import NormalizedUtility 
 
-class read_and_clean: # El nombre de la clase
+class read_and_clean:
     """
-    Clase que encapsula la lógica para leer y limpiar el dataset de reviews.
+    Clase para leer y limpiar el dataset de reviews.
+    Es el DataReader oficial del proyecto, responsable de la transformación de datos.
     """
     
-   # filas necesarias para los ordenamientos 
+    # Constantes de clase que definen los índices de las columnas necesarias.
     COL_APP_NAME = 2
     COL_REVIEW_ID = 3
     COL_TIMESTAMP = 6
@@ -16,53 +18,57 @@ class read_and_clean: # El nombre de la clase
     MAX_INDEX = 9
     
     def __init__(self):
-        # El constructor puede estar vacío si la clase solo tiene métodos estáticos.
+        
         pass
 
-    def leer_y_limpiar_dataset(self, ruta_archivo: str) -> List[NormalizedUtility]:
+    @staticmethod
+    def leer_y_limpiar_dataset(ruta_archivo: str) -> List[NormalizedUtility]:
         """
-        Método que lee el CSV, lo limpia y devuelve una Lista de objetos 
-        NormalizedUtility.
+        Metodo estático que lee el CSV, realiza el proceso de limpieza y 
+        transformacion, y devuelve la lista de objetos listos para el sort.
+        
+        @param ruta_archivo: Ruta al archivo CSV.
+        @return: Lista de objetos NormalizedUtility limpios.
         """
         print(f"[DataReader] Iniciando lectura y limpieza de {ruta_archivo}...")
         
         lista_de_reviews = []
         errores = 0
         
-        # Usamos self. para acceder a las constantes de la clase
-        C_APP_NAME = self.COL_APP_NAME
-        C_REVIEW_ID = self.COL_REVIEW_ID
-        C_TIMESTAMP = self.COL_TIMESTAMP
-        C_RECOMMENDED = self.COL_RECOMMENDED
-        C_VOTES_HELPFUL = self.COL_VOTES_HELPFUL
-        MAX_IDX = self.MAX_INDEX
+        # Accedemos a la constante para la verificación del tamaño de la fila
+        MAX_IDX = read_and_clean.MAX_INDEX
 
-        try:
+        try: 
             with open(ruta_archivo, mode='r', encoding='utf-8') as f:
                 lector_csv = csv.reader(f)
                 
                 try:
-                    next(lector_csv) # Omitir encabezado
+                    next(lector_csv) # Omitir el encabezado del archivo
                 except StopIteration:
                     print("Error: El archivo CSV está vacío.")
                     return []
 
                 for columnas in lector_csv:
+                    # Limpieza 1: Verificación de longitud de fila.
                     if len(columnas) > MAX_IDX:
                         try:
-                            # 1. Transformación y Limpieza
-                            app_name = columnas[C_APP_NAME].strip()
-                            review_id = int(columnas[C_REVIEW_ID].strip())
-                            timestamp = int(columnas[C_TIMESTAMP].strip())
-                            recommended = columnas[C_RECOMMENDED].strip().lower() in ('verdadero', 'true')
-                            votes_helpful = int(columnas[C_VOTES_HELPFUL].strip())
+                            # 1. Transformación (Conversión de tipos)
+                            app_name = columnas[read_and_clean.COL_APP_NAME].strip()
+                            review_id = int(columnas[read_and_clean.COL_REVIEW_ID].strip())
+                            timestamp = int(columnas[read_and_clean.COL_TIMESTAMP].strip())
+                            
+                            # CORRECCIÓN DE SINTAXIS: Acceder correctamente a la constante COL_RECOMMENDED de la clase
+                            recommended = columnas[read_and_clean.COL_RECOMMENDED].strip().lower() in ('verdadero', 'true')
+                            
+                            votes_helpful = int(columnas[read_and_clean.COL_VOTES_HELPFUL].strip())
 
-                            # 2. Creación del objeto
+                            # 2. Creación del objeto (dispara la fórmula)
                             lista_de_reviews.append(
                                 NormalizedUtility(app_name, review_id, timestamp, recommended, votes_helpful)
                             )
                         
                         except (ValueError, IndexError):
+                            # Limpieza 2: Ignorar filas donde la conversión de tipo falla.
                             errores += 1
 
         except FileNotFoundError:
