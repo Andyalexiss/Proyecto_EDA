@@ -11,7 +11,7 @@ from algorithms.NormalizedUtility import NormalizedUtility
 from algorithms.sort_nlogn import sort as mergesort_worker     
 from algorithms.insertion_on2 import sort as insertionsort_worker 
 from multiprocessing_module.timer import Timer
-from results.ResultsWriter import write_header, write_result
+
 
 # --- Configuracion del Experimento ---
 RUTA_DATASET = "datosEda.csv" 
@@ -45,7 +45,7 @@ def main():
     en un entorno de multiples nucleos (Multiproceso).
     """
     
-    write_header()
+   
     print("--- PRUEBAS DE TIEMPO MULTIPROCESO INICIADAS ---")
 
     # 1. CARGA DE DATOS (DataReader)
@@ -85,7 +85,7 @@ def main():
     timer_total.stop()
     tiempo_nlogn = timer_total.get_duration()
     print(f"-> Tiempo O(n log n) TOTAL: {tiempo_nlogn:.4f} segundos")
-    write_result("ParallelMergeSort", "O(n log n)", tiempo_nlogn, NOMBRE_EQUIPO)
+    
 
     # -----------------------------------------------------------------------
     # --- PRUEBA 2:  ALGORITMO LENTO (O(n²) - Insertion Sort) ---
@@ -113,9 +113,9 @@ def main():
     timer_total.stop()
     tiempo_n2 = timer_total.get_duration()
     print(f"-> Tiempo O(n²) TOTAL: {tiempo_n2:.4f} segundos")
-    write_result(f"InsertionSort", "O(n^2)", tiempo_n2, NOMBRE_EQUIPO)
+   
 
-    print("\n--- COMPARACION FINALIZADA ---")
+  
 
 
 if __name__ == "__main__":
